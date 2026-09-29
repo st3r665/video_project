@@ -1,0 +1,110 @@
+﻿<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>上传 · 潮汐视频</title>
+<link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+<div class="page">
+  <div class="card wide">
+    <h1>＋ 上传作品</h1>
+    <div class="sub">支持 mp4 / webm / mov，单个文件不超过 200MB</div>
+    <div class="field">
+      <label>标题</label>
+      <input id="title" maxlength="80" placeholder="给视频起个响亮的标题">
+    </div>
+    <div class="field">
+      <label>分类</label>
+      <select id="category">
+        <option>篮球</option><option>美食</option><option>音乐</option>
+        <option>旅行</option><option>科技</option><option>搞笑</option>
+        <option>游戏</option><option>知识</option><option>其他</option>
+      </select>
+    </div>
+    <div class="field">
+      <label>标签（逗号分隔）</label>
+      <input id="tags" maxlength="200" placeholder="例如：扣篮,NBA,集锦">
+    </div>
+    <div class="field">
+      <label>视频文件</label>
+      <label class="file-label" id="fileLabel">点击选择视频文件</label>
+      <input id="file" type="file" accept="video/mp4,video/webm,video/quicktime,.mp4,.webm,.mov,.m4v" style="display:none">
+    </div>
+    <button class="submit" id="uploadBtn">开始上传</button>
+    <div class="progress-wrap" id="progressWrap">
+      <div class="progress-bar"><div id="progressFill"></div></div>
+      <div class="progress-text" id="progressText">上传中… 0%</div>
+    </div>
+    <div class="msg" id="msg"></div>
+    <div class="hint"><a href="/">← 返回推荐流</a></div>
+  </div>
+</div>
+<script src="/static/app.js"></script>
+<script>
+(function () {
+  const fileInput = document.getElementById('file');
+  const fileLabel = document.getElementById('fileLabel');
+  const msg = document.getElementById('msg');
+
+  fileInput.onchange = () => {
+    if (fileInput.files.length) {
+      const f = fileInput.files[0];
+      fileLabel.textContent = f.name + '（' + (f.size / 1048576).toFixed(1) + ' MB）';
+      fileLabel.classList.add('has');
+    }
+  };
+
+  document.getElementById('uploadBtn').onclick = () => {
+    if (!API.token) { location.href = '/login'; return; }
+    if (!fileInput.files.length) {
+      msg.className = 'msg err';
+      msg.textContent = '请先选择视频文件';
+      return;
+    }
+    const fd = new FormData();
+    fd.append('title', document.getElementById('title').value);
+    fd.append('category', document.getElementById('category').value);
+    fd.append('tags', document.getElementById('tags').value);
+    fd.append('file', fileInput.files[0]);
+
+    const wrap = document.getElementById('progressWrap');
+    const fill = document.getElementById('progressFill');
+    const ptext = document.getElementById('progressText');
+    wrap.style.display = 'block';
+    msg.textContent = '';
+
+    const xhr = new XMLHttpRequest();
+    xhr.open('POST', '/api/upload');
+    xhr.setRequestHeader('Authorization', 'Bearer ' + API.token);
+    xhr.upload.onprogress = e => {
+      if (e.lengthComputable) {
+        const pct = Math.round(e.loaded / e.total * 100);
+        fill.style.width = pct + '%';
+        ptext.textContent = '上传中… ' + pct + '%';
+      }
+    };
+    xhr.onload = () => {
+      let data = {};
+      try { data = JSON.parse(xhr.responseText); } catch (e) {}
+      if (xhr.status === 200) {
+        ptext.textContent = '上传完成！';
+        msg.className = 'msg ok';
+        msg.textContent = '发布成功，正在返回推荐流…';
+        setTimeout(() => location.href = '/', 900);
+      } else {
+        msg.className = 'msg err';
+        msg.textContent = data.error || ('上传失败 HTTP ' + xhr.status);
+      }
+    };
+    xhr.onerror = () => {
+      msg.className = 'msg err';
+      msg.textContent = '网络错误，上传失败';
+    };
+    xhr.send(fd);
+  };
+})();
+</script>
+</body>
+</html>

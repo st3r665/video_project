@@ -1,0 +1,31 @@
+# ===== 工具链（体积大，不入库，按 README 说明自行下载）=====
+jdk-17/
+apache-maven-3.9.16/
+*.zip
+
+# ===== Java 构建产物 =====
+target/
+*.class
+*.jar
+!video-platform-java/**/src/**
+
+# ===== 运行时数据与日志 =====
+data/
+*.log
+*.db
+*.db-wal
+*.db-shm
+
+# ===== Python 缓存 =====
+__pycache__/
+*.pyc
+*.pyo
+
+# ===== 演示媒体（由 seed.py 自动生成，无需入库）=====
+video-platform/media/*.mp4
+
+# ===== 编辑器 / 系统文件 =====
+.idea/
+.vscode/
+Thumbs.db
+.DS_Store

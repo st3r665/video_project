@@ -7,7 +7,8 @@
   2. ItemCF 通道 —— 基于物品的协同过滤（共现余弦相似度 + 行为近因加权）
   3. 兴趣通道    —— 用户分类/标签画像 + 最近浏览实时加权（“实时特征”雏形）
 
-融合：total = 0.25*hot + 0.45*content + 0.30*itemcf
+融合：total = W_HOT*hot + W_CONTENT*content + W_CF*itemcf
+      （当前权重 W_HOT=0.20 / W_CONTENT=0.50 / W_CF=0.30，见下方常量）
 输出：候选列表 + 可解释推荐理由 + 分数构成（debug）
 """
 import math
